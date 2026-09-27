@@ -1,11 +1,21 @@
-# Build and test ApiLens. Publish stays a separate, explicit workflow.
+# Same fail-fast order as other Nuvyntra package repos:
+# version alignment → NuGet key + unpublished version → tests → pack → publish.
+# net10.0 only (no MAUI TFMs, no Windows merge). Libraries publish nupkg and snupkg.
+# nuget.org uses NUGET_KEY_APILENS (NuvyntraLabs.NET.ApiLens.*). GitHub Packages uses GITHUB_TOKEN.
+# Never push NuGet from a local clone.
 name: CI
 
 on:
   push:
     branches: [main]
-  pull_request:
+    tags: ["v*.*.*"]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Unused. CI publishes after key, version, test, and pack checks succeed
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,20 +23,147 @@ concurrency:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
+  version-align:
+    name: Version alignment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout package repo
+        uses: actions/checkout@v4
+
+      - name: Fetch hub CI scripts
+        uses: actions/checkout@v4
+        with:
+          repository: nuvyntralabs/MauiEssentials
+          ref: main
+          path: .ci-tools
+
+      - name: Require matching packable package versions
+        id: check
+        run: |
+          set -euo pipefail
+          script=".github/scripts/check-versions.py"
+          if [ ! -f "$script" ]; then
+            script=".ci-tools/.github/scripts/check-versions.py"
+          fi
+          python3 "$script" --plugin-root .
+
+  version-check:
+    name: NuGet release
+    needs: [version-align]
+    if: success()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout package repo
+        uses: actions/checkout@v4
+
+      - name: Fetch hub CI scripts
+        uses: actions/checkout@v4
+        with:
+          repository: nuvyntralabs/MauiEssentials
+          ref: main
+          path: .ci-tools
+
+      - name: Check NUGET_KEY_APILENS and published version
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_KEY_APILENS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NUGET_KEY}" ]; then
+            echo "::error::NUGET_KEY_APILENS secret is empty. Add a nuget.org API key scoped to NuvyntraLabs.NET.ApiLens* under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          script=".github/scripts/check-nuget-release.py"
+          if [ ! -f "$script" ]; then
+            script=".ci-tools/.github/scripts/check-nuget-release.py"
+          fi
+          python3 "$script" --plugin-root .
+
   test:
-    name: Test
+    name: Unit tests
+    needs: [version-check]
+    if: success()
+    uses: ./.github/workflows/plugin-ci.yml
+    with:
+      runner: ubuntu-latest
+      frameworks: net10.0
+      pack: false
+      test: true
+      install_workloads: false
+      job_name: Unit tests
+
+  linux:
+    needs: [test]
+    if: success()
+    uses: ./.github/workflows/plugin-ci.yml
+    with:
+      runner: ubuntu-latest
+      frameworks: net10.0
+      pack: true
+      test: false
+      install_workloads: false
+      job_name: Pack (net10.0)
+
+  publish:
+    name: nuget.org and GitHub Packages
+    needs: [linux]
+    if: success()
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout
+      - name: Checkout package repo
         uses: actions/checkout@v4
+
+      - name: Fetch hub CI scripts
+        uses: actions/checkout@v4
+        with:
+          repository: nuvyntralabs/MauiEssentials
+          ref: main
+          path: .ci-tools
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
 
-      - name: Test
-        run: dotnet test NuvyntraLabs.NET.ApiLens.slnx --configuration Release
+      - name: Download Linux packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: nuget-*-Linux
+          path: packages
+          merge-multiple: true
+
+      - name: Push nupkg and snupkg
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_KEY_APILENS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NUGET_KEY}" ]; then
+            echo "::error::NUGET_KEY_APILENS secret is empty. Add a nuget.org API key scoped to NuvyntraLabs.NET.ApiLens* under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          script=".github/scripts/push-nuget-packages.py"
+          if [ ! -f "$script" ]; then
+            script=".ci-tools/.github/scripts/push-nuget-packages.py"
+          fi
+          python3 "$script" --packages-dir packages
