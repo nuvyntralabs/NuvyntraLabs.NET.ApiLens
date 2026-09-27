@@ -1,7 +1,7 @@
 # Same fail-fast order as other Nuvyntra package repos:
 # version alignment → NuGet key + unpublished version → tests → pack → publish.
 # net10.0 only (no MAUI TFMs, no Windows merge). Libraries publish nupkg and snupkg.
-# nuget.org uses NUGET_KEY_APILENS (NuvyntraLabs.NET.ApiLens.*). GitHub Packages uses GITHUB_TOKEN.
+# nuget.org uses NUGET_KEY_NET (NuvyntraLabs.NET.ApiLens.*). GitHub Packages uses GITHUB_TOKEN.
 # Never push NuGet from a local clone.
 name: CI
 
@@ -76,13 +76,13 @@ jobs:
           ref: main
           path: .ci-tools
 
-      - name: Check NUGET_KEY_APILENS and published version
+      - name: Check NUGET_KEY_NET and published version
         env:
-          NUGET_KEY: ${{ secrets.NUGET_KEY_APILENS }}
+          NUGET_KEY: ${{ secrets.NUGET_KEY_NET }}
         run: |
           set -euo pipefail
           if [ -z "${NUGET_KEY}" ]; then
-            echo "::error::NUGET_KEY_APILENS secret is empty. Add a nuget.org API key scoped to NuvyntraLabs.NET.ApiLens* under Settings → Secrets and variables → Actions."
+            echo "::error::NUGET_KEY_NET secret is empty. Add a nuget.org API key scoped to NuvyntraLabs.NET.ApiLens* under Settings → Secrets and variables → Actions."
             exit 1
           fi
           script=".github/scripts/check-nuget-release.py"
@@ -153,13 +153,13 @@ jobs:
 
       - name: Push nupkg and snupkg
         env:
-          NUGET_KEY: ${{ secrets.NUGET_KEY_APILENS }}
+          NUGET_KEY: ${{ secrets.NUGET_KEY_NET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
           if [ -z "${NUGET_KEY}" ]; then
-            echo "::error::NUGET_KEY_APILENS secret is empty. Add a nuget.org API key scoped to NuvyntraLabs.NET.ApiLens* under Settings → Secrets and variables → Actions."
+            echo "::error::NUGET_KEY_NET secret is empty. Add a nuget.org API key scoped to NuvyntraLabs.NET.ApiLens* under Settings → Secrets and variables → Actions."
             exit 1
           fi
           script=".github/scripts/push-nuget-packages.py"

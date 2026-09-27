@@ -69,4 +69,4 @@ dotnet run --project samples/ApiLens.Sample
 
 SignalR, gRPC, and Blazor circuits. Work that leaves the request (`Channel`, Hangfire, a background queue) is not attributed. Per-middleware names and JSON serialization time are omitted: ASP.NET Core does not expose them as reliable spans. DNS / connect / TLS splits are omitted unless a later HTTP package can read them from `SocketsHttpHandler` without guessing.
 
-Publishing is pipeline-only. Do not `dotnet nuget push` from a local clone. CI packs `net10.0` and pushes nupkg and snupkg to nuget.org (`NUGET_KEY_APILENS`) and GitHub Packages.
+Publishing is pipeline-only. Do not `dotnet nuget push` from a local clone. CI packs `net10.0` and pushes nupkg and snupkg to nuget.org (`NUGET_KEY_NET`) and GitHub Packages.
