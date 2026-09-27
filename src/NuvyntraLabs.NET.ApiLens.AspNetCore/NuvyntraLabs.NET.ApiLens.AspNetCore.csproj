@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>NuvyntraLabs.NET.ApiLens.AspNetCore</RootNamespace>
+    <Description>ASP.NET Core request timing and the development-only ApiLens dashboard for MVC and minimal APIs.</Description>
+    <PackageTags>aspnetcore;diagnostics;apilens;nuvyntra</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\NuvyntraLabs.NET.ApiLens\NuvyntraLabs.NET.ApiLens.csproj" />
+    <ProjectReference Include="..\NuvyntraLabs.NET.ApiLens.UI\NuvyntraLabs.NET.ApiLens.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+.DS_Store
+bin/
+obj/
+artifacts/
+*.user
+*.db
+*.db-shm
+*.db-wal

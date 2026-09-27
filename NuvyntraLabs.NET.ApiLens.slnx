@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/ApiLens.Sample/ApiLens.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/NuvyntraLabs.NET.ApiLens.AspNetCore/NuvyntraLabs.NET.ApiLens.AspNetCore.csproj" />
+    <Project Path="src/NuvyntraLabs.NET.ApiLens.EntityFrameworkCore/NuvyntraLabs.NET.ApiLens.EntityFrameworkCore.csproj" />
+    <Project Path="src/NuvyntraLabs.NET.ApiLens.Http/NuvyntraLabs.NET.ApiLens.Http.csproj" />
+    <Project Path="src/NuvyntraLabs.NET.ApiLens.UI/NuvyntraLabs.NET.ApiLens.UI.csproj" />
+    <Project Path="src/NuvyntraLabs.NET.ApiLens/NuvyntraLabs.NET.ApiLens.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NuvyntraLabs.NET.ApiLens.AspNetCore.Tests/NuvyntraLabs.NET.ApiLens.AspNetCore.Tests.csproj" />
+    <Project Path="tests/NuvyntraLabs.NET.ApiLens.Tests/NuvyntraLabs.NET.ApiLens.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>ApiLens.Sample</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NuvyntraLabs.NET.ApiLens.AspNetCore\NuvyntraLabs.NET.ApiLens.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\NuvyntraLabs.NET.ApiLens.EntityFrameworkCore\NuvyntraLabs.NET.ApiLens.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\NuvyntraLabs.NET.ApiLens.Http\NuvyntraLabs.NET.ApiLens.Http.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+    <!-- EF Core 10 still pulls SQLitePCLRaw.lib.e_sqlite3 2.1.11 (GHSA-2m69-gcr7-jv3q). -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.13" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+# ApiLens
+
+NuvyntraLabs.NET.ApiLens — developer diagnostics for ASP.NET Core (MVC and minimal APIs).
+
+- Core: NuvyntraLabs.NET.ApiLens
+- Host: NuvyntraLabs.NET.ApiLens.AspNetCore (`AddApiLens`, `UseApiLens`, `/_apilens` in Development only)
+- EF Core: NuvyntraLabs.NET.ApiLens.EntityFrameworkCore
+- HTTP: NuvyntraLabs.NET.ApiLens.Http
+- Dashboard page: NuvyntraLabs.NET.ApiLens.UI
+
+Not endjin/ApiLens (XML doc search). Not an OpenTelemetry exporter. Parameter values and request bodies are never stored.

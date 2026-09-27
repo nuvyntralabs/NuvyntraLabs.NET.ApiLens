@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nuvyntra ApiLens</title>
+  <style>
+    :root { color-scheme: light; --ink: #1c1915; --muted: #5c564c; --line: #e4ddd2; --paper: #f7f4ee; --card: #fff; --warn: #8a4b08; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.45 "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); }
+    header, main { max-width: 960px; margin: 0 auto; padding: 24px; }
+    header { padding-bottom: 0; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    p { color: var(--muted); margin: 0; }
+    .stats, .grid { display: grid; gap: 12px; }
+    .stats { grid-template-columns: repeat(3, 1fr); margin: 20px 0; }
+    .grid { grid-template-columns: 1fr 1fr; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+    h2 { font-size: 14px; margin: 0 0 12px; }
+    .num { font-size: 28px; font-variant-numeric: tabular-nums; }
+    button, .row { width: 100%; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--line); padding: 8px 0; font: inherit; color: inherit; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+    .warn { color: var(--warn); }
+    #detail { margin-top: 12px; }
+    pre { white-space: pre-wrap; font: 13px/1.4 ui-monospace, monospace; margin: 0; }
+    @media (max-width: 720px) { .stats, .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nuvyntra ApiLens</h1>
+    <p>Development diagnostics. Parameter values and request bodies are not stored.</p>
+  </header>
+  <main>
+    <div class="stats">
+      <section><div>Requests</div><div class="num" id="count">–</div></section>
+      <section><div>Errors</div><div class="num" id="errors">–</div></section>
+      <section><div>Avg response</div><div class="num" id="avg">–</div></section>
+    </div>
+    <div class="grid">
+      <section>
+        <h2>Slowest endpoints</h2>
+        <div id="slowest"></div>
+      </section>
+      <section>
+        <h2>Dependencies</h2>
+        <div id="deps"></div>
+      </section>
+    </div>
+    <section id="detail" hidden>
+      <h2 id="detail-title">Request</h2>
+      <pre id="detail-body"></pre>
+    </section>
+  </main>
+  <script>
+    const ms = (value) => value >= 1000 ? (value / 1000).toFixed(2) + " s" : Math.round(value) + " ms";
+    const list = (id, rows, render) => {
+      const node = document.getElementById(id);
+      node.replaceChildren();
+      if (!rows.length) { node.textContent = "None yet."; return; }
+      for (const row of rows) node.append(render(row));
+    };
+    async function load() {
+      const summary = await (await fetch("/_apilens/api/summary")).json();
+      document.getElementById("count").textContent = summary.requestCount;
+      document.getElementById("errors").textContent = summary.errorCount;
+      document.getElementById("avg").textContent = ms(summary.averageDurationMs);
+      list("slowest", summary.slowest, (row) => {
+        const button = document.createElement("button");
+        button.innerHTML = "<span>" + row.method + " " + row.route + "</span><span>" + ms(row.durationMs) + "</span>";
+        button.onclick = () => openRequest(row.requestId);
+        return button;
+      });
+      list("deps", summary.dependencies, (row) => {
+        const div = document.createElement("div");
+        div.className = "row";
+        div.innerHTML = "<span>" + row.name + "</span><span>" + Math.round(row.percent) + "%</span>";
+        return div;
+      });
+    }
+    async function openRequest(id) {
+      const report = await (await fetch("/_apilens/api/requests/" + id)).json();
+      const detail = document.getElementById("detail");
+      detail.hidden = false;
+      document.getElementById("detail-title").textContent = report.method + " " + report.route + " · " + ms(report.durationMs);
+      const lines = [
+        "Status: " + report.statusCode,
+        "Trace: " + report.traceId,
+        "",
+        ...report.statements,
+        "",
+        "Timeline"
+      ];
+      for (const op of report.operations) {
+        lines.push(Math.round(op.startMs) + " ms  " + op.kind + "  " + op.name + "  " + ms(op.durationMs) + (op.detail ? "\n         " + op.detail : ""));
+      }
+      document.getElementById("detail-body").textContent = lines.join("\n");
+    }
+    load();
+  </script>
+</body>
+</html>

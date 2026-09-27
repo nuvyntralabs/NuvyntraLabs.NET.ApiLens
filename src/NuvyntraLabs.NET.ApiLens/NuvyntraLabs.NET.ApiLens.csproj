@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>NuvyntraLabs.NET.ApiLens</RootNamespace>
+    <Description>Request timeline, wall-clock attribution, N+1 detection, and explain rules for ASP.NET Core. No hosting dependency.</Description>
+    <PackageTags>diagnostics;apilens;nuvyntra;aspnetcore</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>
